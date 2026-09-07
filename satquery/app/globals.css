@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+:root {
+  --bg-main: #f7f4ee;
+  --bg-surface: #ffffff;
+  --bg-subtle: #f0ece1;
+  --bg-sidebar: #ede7dc;
+  --border-subtle: #ded6c5;
+  --border-strong: #cac0ac;
+  --text-primary: #232220;
+  --text-secondary: #5f5b55;
+  --text-muted: #8c867c;
+  --color-rust: #b24316;
+  --color-rust-hover: #98350d;
+  --color-rust-light: #fbeee8;
+  --font-claude: "Charter", "Bitstream Charter", "Sitka Text", Cambria, Georgia, serif;
+  --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  font-family: var(--font-claude);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
+}
+
+/* Minimalist Scrollbar - Warm Dull & Rust */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f0ece1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d5ccba;
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #b24316;
+}
+
+.font-claude {
+  font-family: "Charter", "Bitstream Charter", "Sitka Text", Cambria, Georgia, serif;
+}
+
+.font-ui {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
