@@ -39,3 +39,25 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# AI assistants, agents, LLM rules & generated files
+AGENTS.md
+CLAUDE.md
+CLAUDE.local.md
+.claude/
+.clauderules
+.cursor/
+.cursorrules
+.cursorignore
+.gemini/
+.antigravity/
+.windsurf/
+.windsurfrules
+.aider*
+.devin*
+.copilot*
+copilot-instructions.md
+.github/copilot-instructions.md
+*.prompt.md
+prompts/
+ai-prompts/
