@@ -4,10 +4,17 @@ import React, { useState } from "react";
 import { Sidebar } from "./components/Sidebar";
 import { MiddlePanel } from "./components/MiddlePanel";
 import { RightPanel } from "./components/RightPanel";
+import { EarthHeroLanding } from "./components/EarthHeroLanding";
+import { FallingSnowBackground } from "./components/FallingSnowBackground";
 import { SAR_DATASETS, INITIAL_CHAT_SESSIONS } from "./sarData";
 import { SarDataset, ChatSession } from "./types";
+import { Globe2, Sparkles, SlidersHorizontal } from "lucide-react";
 
 export default function Home() {
+  // Page view state: "landing" (3D Earth + Falling Snow) vs "workspace" (Console)
+  const [viewState, setViewState] = useState<"landing" | "workspace">("landing");
+  const [snowEnabled, setSnowEnabled] = useState<boolean>(true);
+
   const [sessions, setSessions] = useState<ChatSession[]>(INITIAL_CHAT_SESSIONS);
   const [activeSessionId, setActiveSessionId] = useState<string>("chat-1");
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(false);
@@ -38,7 +45,6 @@ export default function Home() {
   // Handle "+ New Query"
   const handleNewChat = () => {
     const newId = `chat-${Date.now()}`;
-    // Pick the next dataset or default
     const defaultDs = datasets[0];
     const newSession: ChatSession = {
       id: newId,
@@ -54,12 +60,11 @@ export default function Home() {
     setCurrentPrompt(defaultDs.defaultPrompt);
   };
 
-  // Handle selecting a dataset from the middle panel (Preloaded GeoTIFF carousel)
+  // Handle selecting a dataset from the middle panel
   const handleSelectDataset = (dataset: SarDataset) => {
     setActiveDatasetId(dataset.id);
     setCurrentPrompt(dataset.defaultPrompt);
 
-    // Update active session's dataset link
     setSessions((prev) =>
       prev.map((s) =>
         s.id === activeSessionId
@@ -73,7 +78,7 @@ export default function Home() {
     );
   };
 
-  // Handle custom image upload from computer (e.g. from E:\projects\SatQuery Ai\GeoTIFF_TIFF_Images)
+  // Handle custom image upload
   const handleCustomImageUpload = (file: File) => {
     const objectUrl = URL.createObjectURL(file);
     const newCustomDataset: SarDataset = {
@@ -150,7 +155,6 @@ export default function Home() {
     setActiveDatasetId(newCustomDataset.id);
     setCurrentPrompt(newCustomDataset.defaultPrompt);
 
-    // Add as new chat session
     const newSession: ChatSession = {
       id: `chat-${Date.now()}`,
       heading: `SAR Analysis: ${file.name.slice(0, 24)}...`,
@@ -168,7 +172,6 @@ export default function Home() {
     setIsAnalyzing(true);
     setTimeout(() => {
       setIsAnalyzing(false);
-      // Mark active session as executed
       setSessions((prev) =>
         prev.map((s) =>
           s.id === activeSessionId
@@ -179,39 +182,99 @@ export default function Home() {
     }, 900);
   };
 
+  // 1. RENDER 3D REALISTIC EARTH ROTATE LANDING PAGE
+  if (viewState === "landing") {
+    return <EarthHeroLanding onEnterApp={() => setViewState("workspace")} />;
+  }
+
+  // 2. RENDER UPGRADED WORKSPACE WITH TOP HUD & FALLING SNOW
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-[#f7f4ee] text-[#232220] font-claude antialiased">
-      {/* 1. Leftside Collapsible Chat Section */}
-      <Sidebar
-        sessions={sessions}
-        activeSessionId={activeSessionId}
-        onSelectSession={handleSelectSession}
-        onNewChat={handleNewChat}
-        isCollapsed={isSidebarCollapsed}
-        onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-      />
+    <div className="relative flex flex-col h-screen w-screen overflow-hidden bg-[#f7f4ee] text-[#232220] font-claude antialiased">
+      
+      {/* Continuous Falling Snow / Cosmic Particles */}
+      {snowEnabled && <FallingSnowBackground opacity={0.35} />}
 
-      {/* 2. Middle Section: Image Browse / Ingestion & Multimodal Question/Prompt */}
-      <div className="w-[360px] lg:w-[420px] xl:w-[460px] flex-shrink-0 h-full">
-        <MiddlePanel
-          currentDataset={currentDataset}
-          allDatasets={datasets}
-          onSelectDataset={handleSelectDataset}
-          promptText={currentPrompt}
-          onPromptChange={setCurrentPrompt}
-          onExecuteQuery={handleExecuteQuery}
-          isAnalyzing={isAnalyzing}
-          onCustomImageUpload={handleCustomImageUpload}
-        />
-      </div>
+      {/* TOP UPGRADED TELEMETRY & NAVIGATION STRIP */}
+      <header className="relative z-30 flex-none px-4 py-2.5 bg-[#ede7dc] border-b border-[#ded6c5] flex items-center justify-between shadow-sm">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setViewState("landing")}
+            className="flex items-center gap-2 px-2.5 py-1 rounded-md bg-[#ffffff] hover:bg-[#ded6c5] border border-[#ded6c5] text-xs font-ui text-[#232220] transition cursor-pointer shadow-sm"
+            title="Return to 3D Earth Orbit"
+          >
+            <Globe2 className="w-3.5 h-3.5 text-[#b24316] animate-spin" style={{ animationDuration: "12s" }} />
+            <span className="font-semibold">3D Earth Orbit</span>
+          </button>
 
-      {/* 3. Rightmost Panel: Interactive Zoomable Map & Answer with Rust-Colored Download Button */}
-      <div className="flex-1 h-full min-w-0">
-        <RightPanel
-          dataset={currentDataset}
-          userPrompt={currentPrompt}
-          isAnalyzing={isAnalyzing}
+          <div className="h-4 w-[1px] bg-[#ded6c5] hidden sm:block" />
+
+          <div className="flex items-center gap-2 text-xs font-ui">
+            <span className="text-[10px] uppercase font-mono tracking-widest text-[#b24316] font-bold">
+              ISRO // SIH 26167
+            </span>
+            <span className="text-[#5f5b55] hidden md:inline">·</span>
+            <span className="font-semibold text-[#232220] hidden md:inline">SatQuery AI Console</span>
+          </div>
+        </div>
+
+        {/* Live Mission Orbit Status */}
+        <div className="flex items-center gap-4 text-xs font-ui">
+          <div className="hidden lg:flex items-center gap-2 font-mono text-[11px] text-[#5f5b55]">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span>Nadir: <strong>{currentDataset.coordinates.lat}, {currentDataset.coordinates.lon}</strong></span>
+            <span>·</span>
+            <span>Sensor: <strong>{currentDataset.sensor}</strong></span>
+          </div>
+
+          {/* Snow toggle */}
+          <button
+            onClick={() => setSnowEnabled(!snowEnabled)}
+            className={`px-2 py-1 rounded text-[11px] font-ui flex items-center gap-1 border transition ${
+              snowEnabled
+                ? "bg-[#fbeee8] border-[#f2cdbc] text-[#b24316]"
+                : "bg-[#ffffff] border-[#ded6c5] text-[#5f5b55]"
+            }`}
+          >
+            <Sparkles className="w-3 h-3" />
+            <span>Snow: {snowEnabled ? "ON" : "OFF"}</span>
+          </button>
+        </div>
+      </header>
+
+      {/* 3-PANEL APPLICATION WORKSPACE */}
+      <div className="flex flex-1 min-h-0 overflow-hidden relative z-10">
+        {/* 1. Leftside Collapsible Chat Section */}
+        <Sidebar
+          sessions={sessions}
+          activeSessionId={activeSessionId}
+          onSelectSession={handleSelectSession}
+          onNewChat={handleNewChat}
+          isCollapsed={isSidebarCollapsed}
+          onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
         />
+
+        {/* 2. Middle Section: Image Browse / Ingestion & Multimodal Question/Prompt */}
+        <div className="w-[360px] lg:w-[420px] xl:w-[460px] flex-shrink-0 h-full">
+          <MiddlePanel
+            currentDataset={currentDataset}
+            allDatasets={datasets}
+            onSelectDataset={handleSelectDataset}
+            promptText={currentPrompt}
+            onPromptChange={setCurrentPrompt}
+            onExecuteQuery={handleExecuteQuery}
+            isAnalyzing={isAnalyzing}
+            onCustomImageUpload={handleCustomImageUpload}
+          />
+        </div>
+
+        {/* 3. Rightmost Panel: Interactive Zoomable Map & Answer */}
+        <div className="flex-1 h-full min-w-0">
+          <RightPanel
+            dataset={currentDataset}
+            userPrompt={currentPrompt}
+            isAnalyzing={isAnalyzing}
+          />
+        </div>
       </div>
     </div>
   );

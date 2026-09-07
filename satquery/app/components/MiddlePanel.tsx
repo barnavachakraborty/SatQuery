@@ -62,12 +62,15 @@ export const MiddlePanel: React.FC<MiddlePanelProps> = ({
             SAR Ingestion & Prompt
           </h2>
         </div>
-        <div className="flex items-center gap-2 font-ui">
+        <div className="flex items-center gap-1.5 font-ui">
+          <span className="text-[10px] px-2 py-0.5 rounded-sm bg-[#fbeee8] text-[#b24316] border border-[#f2cdbc] font-medium">
+            OPT + SAR
+          </span>
           <span className="text-[10px] px-2 py-0.5 rounded-sm bg-[#ffffff] text-[#5f5b55] border border-[#ded6c5] flex items-center gap-1">
             <Radio className="w-2.5 h-2.5 text-[#b24316]" />
-            Umbra X-SAR
+            Sentinel & Umbra
           </span>
-          <span className="text-[10px] px-2 py-0.5 rounded-sm bg-[#fbeee8] text-[#b24316] border border-[#f2cdbc]">
+          <span className="text-[10px] px-2 py-0.5 rounded-sm bg-[#ffffff] text-[#5f5b55] border border-[#ded6c5]">
             0.5m GSD
           </span>
         </div>

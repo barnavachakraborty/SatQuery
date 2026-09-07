@@ -17,6 +17,7 @@ import {
   Radio,
 } from "lucide-react";
 import { ChatSession } from "../types";
+import { MiniGlobeWidget } from "./MiniGlobeWidget";
 
 interface SidebarProps {
   sessions: ChatSession[];
@@ -198,6 +199,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
           );
         })}
       </div>
+
+      {/* Mini 3D Sub-Satellite Nadir Widget */}
+      {!isCollapsed && (
+        <div className="px-3 pb-2">
+          <MiniGlobeWidget lat="26°10'N" lon="91°44'E" />
+        </div>
+      )}
 
       {/* Bottom Status */}
       <div className="p-3 border-t border-[#ded6c5] bg-[#ede7dc]">
