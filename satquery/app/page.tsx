@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Sidebar } from "./components/Sidebar";
 import { MiddlePanel } from "./components/MiddlePanel";
 import { RightPanel } from "./components/RightPanel";
@@ -8,12 +8,51 @@ import { EarthHeroLanding } from "./components/EarthHeroLanding";
 import { FallingSnowBackground } from "./components/FallingSnowBackground";
 import { SAR_DATASETS, INITIAL_CHAT_SESSIONS } from "./sarData";
 import { SarDataset, ChatSession } from "./types";
-import { Globe2, Sparkles, SlidersHorizontal } from "lucide-react";
+import { Globe2, Sparkles, SlidersHorizontal, ArrowLeft, Layers, Target, History } from "lucide-react";
 
 export default function Home() {
   // Page view state: "landing" (3D Earth + Falling Snow) vs "workspace" (Console)
   const [viewState, setViewState] = useState<"landing" | "workspace">("landing");
   const [snowEnabled, setSnowEnabled] = useState<boolean>(true);
+  const [mobileTab, setMobileTab] = useState<"analysis" | "query" | "missions">("analysis");
+
+  // Sync with browser history and URL query parameters so the browser Back/Forward buttons work seamlessly
+  useEffect(() => {
+    const handlePopState = () => {
+      const searchParams = new URLSearchParams(window.location.search);
+      if (searchParams.get("view") === "workspace") {
+        setViewState("workspace");
+      } else {
+        setViewState("landing");
+      }
+    };
+
+    // On initial mount, restore state from URL query
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("view") === "workspace") {
+      setViewState("workspace");
+    }
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  // Router navigation helpers
+  const navigateToWorkspace = () => {
+    if (typeof window !== "undefined") {
+      window.history.pushState({ view: "workspace" }, "", "?view=workspace");
+    }
+    setViewState("workspace");
+  };
+
+  const navigateToLanding = () => {
+    if (typeof window !== "undefined") {
+      if (window.location.search.includes("view=workspace")) {
+        window.history.pushState({ view: "landing" }, "", window.location.pathname);
+      }
+    }
+    setViewState("landing");
+  };
 
   const [sessions, setSessions] = useState<ChatSession[]>(INITIAL_CHAT_SESSIONS);
   const [activeSessionId, setActiveSessionId] = useState<string>("chat-1");
@@ -184,7 +223,7 @@ export default function Home() {
 
   // 1. RENDER 3D REALISTIC EARTH ROTATE LANDING PAGE
   if (viewState === "landing") {
-    return <EarthHeroLanding onEnterApp={() => setViewState("workspace")} />;
+    return <EarthHeroLanding onEnterApp={navigateToWorkspace} />;
   }
 
   // 2. RENDER UPGRADED WORKSPACE WITH TOP HUD & FALLING SNOW
@@ -194,31 +233,32 @@ export default function Home() {
       {/* Continuous Falling Snow / Cosmic Particles */}
       {snowEnabled && <FallingSnowBackground opacity={0.35} />}
 
-      {/* TOP UPGRADED TELEMETRY & NAVIGATION STRIP */}
-      <header className="relative z-30 flex-none px-4 py-2.5 bg-[#ede7dc] border-b border-[#ded6c5] flex items-center justify-between shadow-sm">
-        <div className="flex items-center gap-3">
+      {/* TOP UPGRADED TELEMETRY & NAVIGATION STRIP (Responsive) */}
+      <header className="relative z-30 flex-none px-3 sm:px-4 py-2 sm:py-2.5 bg-[#ede7dc] border-b border-[#ded6c5] flex items-center justify-between shadow-sm">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <button
-            onClick={() => setViewState("landing")}
-            className="flex items-center gap-2 px-2.5 py-1 rounded-md bg-[#ffffff] hover:bg-[#ded6c5] border border-[#ded6c5] text-xs font-ui text-[#232220] transition cursor-pointer shadow-sm"
-            title="Return to 3D Earth Orbit"
+            onClick={navigateToLanding}
+            className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 rounded-md bg-[#ffffff] hover:bg-[#ded6c5] border border-[#ded6c5] text-xs font-ui text-[#232220] transition-all cursor-pointer shadow-sm group flex-shrink-0"
+            title="Return to 3D Earth Landing Page (Browser back button also works)"
           >
-            <Globe2 className="w-3.5 h-3.5 text-[#b24316] animate-spin" style={{ animationDuration: "12s" }} />
-            <span className="font-semibold">3D Earth Orbit</span>
+            <ArrowLeft className="w-3.5 h-3.5 text-[#b24316] transition-transform group-hover:-translate-x-0.5" />
+            <Globe2 className="w-3.5 h-3.5 text-[#b24316] animate-spin" style={{ animationDuration: "16s" }} />
+            <span className="font-semibold text-[11px] sm:text-xs">Exit</span>
           </button>
 
           <div className="h-4 w-[1px] bg-[#ded6c5] hidden sm:block" />
 
-          <div className="flex items-center gap-2 text-xs font-ui">
-            <span className="text-[10px] uppercase font-mono tracking-widest text-[#b24316] font-bold">
-              ISRO // SIH 26167
+          <div className="flex items-center gap-1.5 sm:gap-2 text-xs font-ui min-w-0">
+            <span className="text-[10px] uppercase font-mono tracking-widest text-[#b24316] font-bold truncate">
+              SIH 26167
             </span>
             <span className="text-[#5f5b55] hidden md:inline">·</span>
-            <span className="font-semibold text-[#232220] hidden md:inline">SatQuery AI Console</span>
+            <span className="font-semibold text-[#232220] hidden md:inline truncate">SatQuery AI Console</span>
           </div>
         </div>
 
         {/* Live Mission Orbit Status */}
-        <div className="flex items-center gap-4 text-xs font-ui">
+        <div className="flex items-center gap-2 sm:gap-4 text-xs font-ui flex-shrink-0">
           <div className="hidden lg:flex items-center gap-2 font-mono text-[11px] text-[#5f5b55]">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span>Nadir: <strong>{currentDataset.coordinates.lat}, {currentDataset.coordinates.lon}</strong></span>
@@ -229,46 +269,103 @@ export default function Home() {
           {/* Snow toggle */}
           <button
             onClick={() => setSnowEnabled(!snowEnabled)}
-            className={`px-2 py-1 rounded text-[11px] font-ui flex items-center gap-1 border transition ${
+            className={`px-2 py-1 rounded text-[11px] font-ui flex items-center gap-1 border transition cursor-pointer ${
               snowEnabled
                 ? "bg-[#fbeee8] border-[#f2cdbc] text-[#b24316]"
                 : "bg-[#ffffff] border-[#ded6c5] text-[#5f5b55]"
             }`}
           >
             <Sparkles className="w-3 h-3" />
-            <span>Snow: {snowEnabled ? "ON" : "OFF"}</span>
+            <span className="hidden sm:inline">Snow: </span><span>{snowEnabled ? "ON" : "OFF"}</span>
           </button>
         </div>
       </header>
 
-      {/* 3-PANEL APPLICATION WORKSPACE */}
-      <div className="flex flex-1 min-h-0 overflow-hidden relative z-10">
-        {/* 1. Leftside Collapsible Chat Section */}
-        <Sidebar
-          sessions={sessions}
-          activeSessionId={activeSessionId}
-          onSelectSession={handleSelectSession}
-          onNewChat={handleNewChat}
-          isCollapsed={isSidebarCollapsed}
-          onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-        />
+      {/* MOBILE WORKSPACE TAB SELECTOR (< lg screens) */}
+      <nav className="flex lg:hidden flex-none items-center justify-around bg-[#ede7dc] border-b border-[#ded6c5] px-2 py-1.5 z-20">
+        <button
+          onClick={() => setMobileTab("analysis")}
+          className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-ui transition cursor-pointer ${
+            mobileTab === "analysis"
+              ? "bg-[#ffffff] text-[#b24316] font-bold shadow-xs border border-[#ded6c5]"
+              : "text-[#5f5b55]"
+          }`}
+        >
+          <Target className="w-3.5 h-3.5 text-[#b24316]" />
+          <span>Radar & Analysis</span>
+        </button>
 
-        {/* 2. Middle Section: Image Browse / Ingestion & Multimodal Question/Prompt */}
-        <div className="w-[360px] lg:w-[420px] xl:w-[460px] flex-shrink-0 h-full">
-          <MiddlePanel
-            currentDataset={currentDataset}
-            allDatasets={datasets}
-            onSelectDataset={handleSelectDataset}
-            promptText={currentPrompt}
-            onPromptChange={setCurrentPrompt}
-            onExecuteQuery={handleExecuteQuery}
-            isAnalyzing={isAnalyzing}
-            onCustomImageUpload={handleCustomImageUpload}
+        <button
+          onClick={() => setMobileTab("query")}
+          className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-ui transition cursor-pointer ${
+            mobileTab === "query"
+              ? "bg-[#ffffff] text-[#b24316] font-bold shadow-xs border border-[#ded6c5]"
+              : "text-[#5f5b55]"
+          }`}
+        >
+          <SlidersHorizontal className="w-3.5 h-3.5 text-[#b24316]" />
+          <span>Query & Tiles</span>
+        </button>
+
+        <button
+          onClick={() => setMobileTab("missions")}
+          className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-ui transition cursor-pointer ${
+            mobileTab === "missions"
+              ? "bg-[#ffffff] text-[#b24316] font-bold shadow-xs border border-[#ded6c5]"
+              : "text-[#5f5b55]"
+          }`}
+        >
+          <History className="w-3.5 h-3.5 text-[#b24316]" />
+          <span>Missions</span>
+        </button>
+      </nav>
+
+      {/* 3-PANEL APPLICATION WORKSPACE (Desktop: Side-by-Side | Mobile: Active Tab Full-Width) */}
+      <div className="flex flex-1 min-h-0 overflow-hidden relative z-10 w-full">
+        {/* 1. Leftside Collapsible Chat Section */}
+        <div className={`h-full ${mobileTab === "missions" ? "w-full block" : "hidden"} lg:block lg:w-auto`}>
+          <Sidebar
+            sessions={sessions}
+            activeSessionId={activeSessionId}
+            onSelectSession={(id) => {
+              handleSelectSession(id);
+              setMobileTab("analysis");
+            }}
+            onNewChat={handleNewChat}
+            isCollapsed={isSidebarCollapsed}
+            onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+            currentLat={currentDataset.coordinates.lat}
+            currentLon={currentDataset.coordinates.lon}
+            locationName={currentDataset.location}
+            onReturnToEarth={navigateToLanding}
           />
         </div>
 
-        {/* 3. Rightmost Panel: Interactive Zoomable Map & Answer */}
-        <div className="flex-1 h-full min-w-0">
+        {/* 2. Middle Section: Image Browse / Ingestion & Multimodal Question/Prompt */}
+        <div className={`h-full ${mobileTab === "query" ? "w-full block" : "hidden"} lg:block w-full lg:w-[360px] xl:w-[420px] flex-shrink-0`}>
+          <MiddlePanel
+            currentDataset={currentDataset}
+            allDatasets={datasets}
+            onSelectDataset={(ds) => {
+              handleSelectDataset(ds);
+              setMobileTab("analysis");
+            }}
+            promptText={currentPrompt}
+            onPromptChange={setCurrentPrompt}
+            onExecuteQuery={() => {
+              handleExecuteQuery();
+              setMobileTab("analysis"); // Automatically switch to RightPanel analysis on mobile when user asks query
+            }}
+            isAnalyzing={isAnalyzing}
+            onCustomImageUpload={(file) => {
+              handleCustomImageUpload(file);
+              setMobileTab("analysis");
+            }}
+          />
+        </div>
+
+        {/* 3. Rightmost Panel: Interactive Zoomable Map & Answer (Always 100% visible on mobile analysis tab) */}
+        <div className={`h-full min-w-0 ${mobileTab === "analysis" ? "w-full flex-1 block" : "hidden"} lg:block lg:flex-1`}>
           <RightPanel
             dataset={currentDataset}
             userPrompt={currentPrompt}

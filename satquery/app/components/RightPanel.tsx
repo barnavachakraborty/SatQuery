@@ -61,6 +61,28 @@ export const RightPanel: React.FC<RightPanelProps> = ({
     setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y });
   };
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) {
+      setIsDragging(true);
+      setDragStart({
+        x: e.touches[0].clientX - pan.x,
+        y: e.touches[0].clientY - pan.y,
+      });
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging || e.touches.length !== 1) return;
+    setPan({
+      x: e.touches[0].clientX - dragStart.x,
+      y: e.touches[0].clientY - dragStart.y,
+    });
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+  };
+
   const handleMouseMove = (e: React.MouseEvent) => {
     if (containerRef.current) {
       const rect = containerRef.current.getBoundingClientRect();
@@ -213,8 +235,11 @@ export const RightPanel: React.FC<RightPanelProps> = ({
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
             onWheel={handleWheel}
-            className={`relative w-full h-80 sm:h-96 md:h-[420px] overflow-hidden select-none bg-[#ede7dc] ${
+            className={`relative w-full h-72 sm:h-96 md:h-[420px] overflow-hidden select-none bg-[#ede7dc] touch-none ${
               isDragging ? "cursor-grabbing" : "cursor-grab"
             }`}
           >
@@ -230,7 +255,7 @@ export const RightPanel: React.FC<RightPanelProps> = ({
                   src={dataset.imageSrc}
                   alt={dataset.title}
                   draggable={false}
-                  className={`max-w-none w-[700px] h-[700px] object-cover filter ${
+                  className={`max-w-none w-[360px] h-[360px] sm:w-[520px] sm:h-[520px] md:w-[680px] md:h-[680px] object-cover filter ${
                     viewMode === "raw"
                       ? "contrast-125 brightness-95 grayscale"
                       : viewMode === "pseudocolor"

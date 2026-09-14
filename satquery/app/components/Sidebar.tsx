@@ -26,6 +26,10 @@ interface SidebarProps {
   onNewChat: () => void;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
+  currentLat?: string;
+  currentLon?: string;
+  locationName?: string;
+  onReturnToEarth?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -35,6 +39,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onNewChat,
   isCollapsed,
   onToggleCollapse,
+  currentLat,
+  currentLon,
+  locationName,
+  onReturnToEarth,
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -203,7 +211,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Mini 3D Sub-Satellite Nadir Widget */}
       {!isCollapsed && (
         <div className="px-3 pb-2">
-          <MiniGlobeWidget lat="26°10'N" lon="91°44'E" />
+          <MiniGlobeWidget
+            lat={currentLat}
+            lon={currentLon}
+            locationName={locationName}
+            onExpand={onReturnToEarth}
+          />
         </div>
       )}
 
